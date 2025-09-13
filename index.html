@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Picture Upload Test</title>
+</head>
+<body style="text-align:center; font-family:Arial;">
+  <h2>Upload Test</h2>
+  <form>
+    <label>Full Name: </label>
+    <input type="text" id="fullName"><br><br>
+
+    <label>CNIC: </label>
+    <input type="text" id="cnic"><br><br>
+
+    <button type="button" onclick="openForm()">Upload Picture</button>
+  </form>
+
+  <script>
+    function openForm() {
+      let cnic = document.getElementById('cnic').value.trim();
+      let name = document.getElementById('fullName').value.trim();
+
+      if (!cnic) {
+        alert("Please enter CNIC first!");
+        return;
+      }
+
+      // Google Form pre-fill link (replace with your Form’s URL)
+      let formBase = "https://docs.google.com/forms/d/e/FORM_ID/viewform";
+      let url = formBase + "?usp=pp_url&entry.1234567890=" + cnic + "&entry.9876543210=" + name;
+
+      window.open(url, "UploadForm", "width=500,height=600");
+    }
+  </script>
+</body>
+</html>
