@@ -2,82 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Upload Picture</title>
+  <title>Simple Upload</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 80px;
-      background: #f9f9f9;
-    }
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
     .upload-btn {
-      background: #25D366;
+      background: #28a745;
       color: white;
-      padding: 15px 25px;
-      font-size: 18px;
+      padding: 12px 25px;
       border: none;
       border-radius: 8px;
+      font-size: 16px;
       cursor: pointer;
       transition: 0.3s;
     }
-    .upload-btn:hover {
-      background: #128C7E;
-    }
-    input[type="file"] {
-      display: none;
-    }
+    .upload-btn:hover { background: #218838; }
   </style>
 </head>
 <body>
-  <h2>Upload Picture</h2>
+  <h2>Upload Employee Picture</h2>
+  
   <form id="uploadForm">
-    <label class="upload-btn" for="fileInput">📷 Upload Picture</label>
-    <input type="file" id="fileInput" name="file" accept="image/*" />
+    <input type="text" name="name" placeholder="Employee Name" required><br><br>
+    <input type="text" name="cnic" placeholder="CNIC" required><br><br>
+    <input type="text" name="posting" placeholder="Posting Place" required><br><br>
+    <input type="file" id="photo" name="photo" accept="image/*" required><br><br>
+    <button type="submit" class="upload-btn">Upload Picture</button>
   </form>
 
   <p id="status"></p>
 
   <script>
-    const fileInput = document.getElementById('fileInput');
-    const status = document.getElementById('status');
+    const scriptURL = "https://script.google.com/macros/s/AKfycbzbK8lzIEdAUHd1q7zPgMlyCXScer8iULAfcyjg1zSvv8e5x-UXsic18-0Pw8g3UBtEPg/exec"; // 👈 اپنی Apps Script deployment URL ڈالیں
+    const form = document.getElementById("uploadForm");
+    const statusText = document.getElementById("status");
 
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwF_8np6cSwTCVW3Dp3S-XXWFGj5A8jcNX771EHAVMjh1o0B7u8WMkZ6ztdzQYO4e9d_Q/exec"; // ← replace with Apps Script URL
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById("photo");
+      const file = fileInput.files[0];
+      if (!file) return alert("Please select a file!");
 
-    fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      status.textContent = "Uploading...";
-
-      // Convert to Base64
       const reader = new FileReader();
       reader.onloadend = async () => {
-        const base64Data = reader.result.split(",")[1];
-
         try {
-          let res = await fetch(scriptURL, {
+          const formData = new FormData();
+          formData.append("filename", file.name);
+          formData.append("name", form.name.value);
+          formData.append("cnic", form.cnic.value);
+          formData.append("posting", form.posting.value);
+          formData.append("file", new Blob([reader.result], {type: file.type}));
+
+          await fetch(scriptURL, {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({
-              filename: file.name,
-              mimeType: file.type,
-              data: base64Data
-            })
+            mode: "no-cors",   // 👈 CORS bypass
+            body: formData
           });
 
-          let data = await res.json();
-
-          if (data.status === "success") {
-            status.innerHTML = `✅ Uploaded! <a href="${data.fileUrl}" target="_blank">View Picture</a>`;
-          } else {
-            status.textContent = "❌ Error: " + data.message;
-          }
+          statusText.textContent = "Upload request sent! (Check Sheet + Drive)";
+          form.reset();
         } catch (err) {
-          status.textContent = "❌ Upload Failed!";
-          console.error(err);
+          statusText.textContent = "Upload Failed: " + err.message;
         }
       };
-      reader.readAsDataURL(file);
+      reader.readAsArrayBuffer(file);
     });
   </script>
 </body>
