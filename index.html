@@ -1,10 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Image Upload</title>
-  <meta http-equiv="refresh" content="0; url='https://script.google.com/macros/s/AKfycbx-wFKxZ6teXLaJpSK0EJz5rZsKH1DmVVgwxeEB8tqQcjLcFVZGVfbWN1ZzwtxN1gat/exec'" />
+  <meta charset="UTF-8">
+  <title>Upload Picture</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 80px;
+      background: #f9f9f9;
+    }
+    .upload-btn {
+      background: #25D366; /* WhatsApp green style */
+      color: white;
+      padding: 15px 25px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .upload-btn:hover {
+      background: #128C7E;
+    }
+    input[type="file"] {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <p>Redirecting to upload page...</p>
+  <h2>Upload Employee Picture</h2>
+  <form id="uploadForm">
+    <label class="upload-btn" for="fileInput">📷 Upload Picture</label>
+    <input type="file" id="fileInput" name="file" accept="image/*" />
+  </form>
+
+  <p id="status"></p>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const status = document.getElementById('status');
+
+    const scriptURL = "YOUR_WEB_APP_URL"; // Apps Script web app URL paste karein
+
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      let formData = new FormData();
+      formData.append("file", file);
+
+      status.textContent = "Uploading...";
+
+      try {
+        let res = await fetch(scriptURL, {
+          method: "POST",
+          body: formData
+        });
+        let data = await res.json();
+
+        if (data.status === "success") {
+          status.innerHTML = `✅ Uploaded! <a href="${data.fileUrl}" target="_blank">View Picture</a>`;
+        } else {
+          status.textContent = "❌ Error: " + data.message;
+        }
+      } catch (err) {
+        status.textContent = "❌ Upload Failed!";
+        console.error(err);
+      }
+    });
+  </script>
 </body>
 </html>
