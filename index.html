@@ -1,36 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Picture Upload Test</title>
+  <meta charset="UTF-8">
+  <title>Upload Picture</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 80px;
+      background: #f9f9f9;
+    }
+    .upload-btn {
+      background: #25D366; /* WhatsApp green style */
+      color: white;
+      padding: 15px 25px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .upload-btn:hover {
+      background: #128C7E;
+    }
+    input[type="file"] {
+      display: none;
+    }
+  </style>
 </head>
-<body style="text-align:center; font-family:Arial;">
-  <h2>Upload Test</h2>
-  <form>
-    <label>Full Name: </label>
-    <input type="text" id="fullName"><br><br>
-
-    <label>CNIC: </label>
-    <input type="text" id="cnic"><br><br>
-
-    <button type="button" onclick="openForm()">Upload Picture</button>
+<body>
+  <h2>Upload Employee Picture</h2>
+  <form id="uploadForm">
+    <label class="upload-btn" for="fileInput">📷 Upload Picture</label>
+    <input type="file" id="fileInput" name="file" accept="image/*" />
   </form>
 
+  <p id="status"></p>
+
   <script>
-    function openForm() {
-      let cnic = document.getElementById('cnic').value.trim();
-      let name = document.getElementById('fullName').value.trim();
+    const fileInput = document.getElementById('fileInput');
+    const status = document.getElementById('status');
 
-      if (!cnic) {
-        alert("Please enter CNIC first!");
-        return;
+    const scriptURL = "YOUR_WEB_APP_URL"; // Apps Script web app URL paste karein
+
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      let formData = new FormData();
+      formData.append("file", file);
+
+      status.textContent = "Uploading...";
+
+      try {
+        let res = await fetch(scriptURL, {
+          method: "POST",
+          body: formData
+        });
+        let data = await res.json();
+
+        if (data.status === "success") {
+          status.innerHTML = `✅ Uploaded! <a href="${data.fileUrl}" target="_blank">View Picture</a>`;
+        } else {
+          status.textContent = "❌ Error: " + data.message;
+        }
+      } catch (err) {
+        status.textContent = "❌ Upload Failed!";
+        console.error(err);
       }
-
-      // Google Form pre-fill link (replace with your Form’s URL)
-      let formBase = "https://docs.google.com/forms/d/e/1-JhbAdTBSyJKkM7vBNVTcoUmjYBKB_zJlPLTpHtmWys  /viewform";
-      let url = formBase + "?usp=pp_url&entry.912885013=" + cnic + "&entry.1534810847=" + name;
-
-      window.open(url, "UploadForm", "width=500,height=600");
-    }
+    });
   </script>
 </body>
 </html>
