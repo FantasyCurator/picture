@@ -11,7 +11,7 @@
       background: #f9f9f9;
     }
     .upload-btn {
-      background: #25D366; /* WhatsApp green style */
+      background: #25D366;
       color: white;
       padding: 15px 25px;
       font-size: 18px;
@@ -41,33 +41,43 @@
     const fileInput = document.getElementById('fileInput');
     const status = document.getElementById('status');
 
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwk5r8bE4imPbmDlpGszL5__NlYCbPu-USB52jI_o3XY_6Is2pXVvbrbqKkM9qalZ_10A/exec"; // Apps Script web app URL paste karein
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwF_8np6cSwTCVW3Dp3S-XXWFGj5A8jcNX771EHAVMjh1o0B7u8WMkZ6ztdzQYO4e9d_Q/exec"; // ← replace with Apps Script URL
 
     fileInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
-      let formData = new FormData();
-      formData.append("file", file);
-
       status.textContent = "Uploading...";
 
-      try {
-        let res = await fetch(scriptURL, {
-          method: "POST",
-          body: formData
-        });
-        let data = await res.json();
+      // Convert to Base64
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Data = reader.result.split(",")[1];
 
-        if (data.status === "success") {
-          status.innerHTML = `✅ Uploaded! <a href="${data.fileUrl}" target="_blank">View Picture</a>`;
-        } else {
-          status.textContent = "❌ Error: " + data.message;
+        try {
+          let res = await fetch(scriptURL, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+              filename: file.name,
+              mimeType: file.type,
+              data: base64Data
+            })
+          });
+
+          let data = await res.json();
+
+          if (data.status === "success") {
+            status.innerHTML = `✅ Uploaded! <a href="${data.fileUrl}" target="_blank">View Picture</a>`;
+          } else {
+            status.textContent = "❌ Error: " + data.message;
+          }
+        } catch (err) {
+          status.textContent = "❌ Upload Failed!";
+          console.error(err);
         }
-      } catch (err) {
-        status.textContent = "❌ Upload Failed!";
-        console.error(err);
-      }
+      };
+      reader.readAsDataURL(file);
     });
   </script>
 </body>
